@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "oui_importer": {
+      "commandName": "Project",
+      "commandLineArgs": "oui.txt",
+      "workingDirectory": "c:\\Users\\CM\\source\\repos\\cping\\oui_importer\\"
+    }
+  }
+}
