@@ -3,6 +3,9 @@ using System.Text;
 using System.IO;
 using Microsoft.Data.Sqlite;
 using System.Reflection;
+using System.Data;
+using SQLitePCL;
+using oui_importer;
 
 namespace oui_impoter
 {
@@ -34,11 +37,11 @@ namespace oui_impoter
                 }
                 else if (value[i] >= 'a' && value[i] <= 'f')
                 {
-                    oid = (oid << 4) | (value[i++] - 0x37);
+                    oid = (oid << 4) | (value[i++] - 0x57);
                 }
                 else if (value[i] >= 'A' && value[i] <= 'F')
                 {
-                    oid = (oid << 4) | (value[i++] - 0x57);
+                    oid = (oid << 4) | (value[i++] - 0x37);
                 }
                 else 
                     i++;
@@ -50,38 +53,50 @@ namespace oui_impoter
 
         private int InsertManufacturer(string manufacturerName, string manufacturerAddress, string country)
         {
+            string statement = "";
             try
             {
                 if (_connection == null)
                     return -1;
                 int countryId = 0;
+                
                 SqliteCommand command = _connection.CreateCommand();
-                command.CommandText = $"select Id from countries where code = '{country}'";
+                statement = $"select Id from countries where A2 = '{country}'";
+                command.CommandText = statement;
                 using (SqliteDataReader reader = command.ExecuteReader())
                 {
-                    if (!reader.Read())
+                    if ((!reader.Read()) || ((countryId = reader.GetInt32(0)) == 0))
+                    {
+                        Console.WriteLine($"Cannot get country id for {country}");
                         return -1;
-                    countryId = reader.GetInt32(0);
+                    }                    
                 }
-                command.CommandText = "insert into manufacturers (NameEn, NameRu, Address, Country) values " +
-                                      $"('{manufacturerName}', '{manufacturerName}', '{manufacturerAddress}', {countryId}) "+
+                statement = "insert into manufacturers (NameEn, NameRu, Address, Country) values " +
+                                      $"('{manufacturerName}', '{manufacturerName}', '{manufacturerAddress.QuotedString('\'')}', {countryId}) " +
                                       "returning Id";
+                command.CommandText = statement;
                 using (SqliteDataReader reader = command.ExecuteReader())
                 {
                     if (!reader.Read())
+                    {
+                        Console.WriteLine(statement);
+                        Console.WriteLine();
                         return -1;
+                    }
                     return reader.GetInt32(0);
                 }
             }
-            catch
+            catch ( Exception ex)
             {
+                Console.WriteLine(statement);
+                Console.WriteLine(ex.Message);
+                Console.WriteLine($"Cannot insert manufacturer {manufacturerName} {country}");
                 return -1;
             }
         }
 
         public void Run()
-        {
-            
+        {            
             if (String.IsNullOrEmpty(_filename))
             {
                 while (true)
@@ -98,7 +113,7 @@ namespace oui_impoter
                     }
                 }
             }
-            //string dbPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().CodeBase);
+            int inserted = 0;
             SqliteConnectionStringBuilder builder = new SqliteConnectionStringBuilder
             {
 
@@ -110,7 +125,7 @@ namespace oui_impoter
             {
                 #region Header reading
                 string line;
-                while((line = reader.ReadLine()) != null)
+                while ((line = reader.ReadLine()) != null)
                 {
                     if (String.IsNullOrEmpty(line))
                     {
@@ -128,59 +143,89 @@ namespace oui_impoter
                 string country = "";
                 while (true)
                 {
+                    rowNo = 0;
+                    addressBuilder.Clear();
+                    country = "";
+                    manufacturerName = "";
+                    manufacturerId = -1;
+                    oid = 0;
                     while ((line = reader.ReadLine()) != null)
                     {
 
-                        if(String.IsNullOrEmpty(line))
+                        if (String.IsNullOrEmpty(line))
                         {
+                            rowNo = 0;
                             break;
                         }
+                        line = line.Trim();
                         if (rowNo == 0)
                         {
                             int spaceIndex = line.IndexOf(' ');
                             //oid = StringToOid(line.Substring(0, spaceIndex - 1));
                             line = line.Substring(spaceIndex + 1).TrimStart();
-                            spaceIndex = line.IndexOf(' ');
+                            spaceIndex = line.IndexOfAny(new char[]{' ', '\t'});
                             line = line.Substring(spaceIndex).TrimStart();
-                            manufacturerName = line;
+                            manufacturerName = line.QuotedString('\'');
                             rowNo++;
                         }
                         else if (rowNo == 1)
                         {
                             int spaceIndex = line.IndexOf(' ');
-                            oid = StringToOid(line.Substring(0,spaceIndex + 1));
+                            oid = StringToOid(line.Substring(0, spaceIndex + 1));
                             rowNo++;
                         }
                         else
                         {
-                           if (line.Length == 2)
+                            if (line.Length == 2)
                             {
                                 country = line;
                             }
-                           else
+                            else
                             {
                                 addressBuilder.Append(line);
                             }
                         }
                     }
+                    if (line == null)
+                        break;
                     string statement;
                     statement = $"select Id from Manufacturers where NameEn = '{manufacturerName}'";
                     SqliteCommand command = _connection.CreateCommand();
                     command.CommandText = statement;
                     using (SqliteDataReader dbReader = command.ExecuteReader())
                     {
-                        if (!dbReader.Read())
+                        if ((!dbReader.Read())||((manufacturerId = dbReader.GetInt32(0)) == 0))
                         {
                             manufacturerId = InsertManufacturer(manufacturerName, addressBuilder.ToString(), country);
-                        }
-                        else
-                        {
-                            manufacturerId = dbReader.GetInt32(0);
+                            if (manufacturerId == 0)
+                            {
+                                Console.WriteLine($"Manufacturer {manufacturerName} not created!");
+                                continue;
+                            }
                         }
                     }
-                    command.CommandText = "insert into oui (Mask, Manufacturer) values "+
-                        $"({oid},{manufacturerId})";
-                    command.ExecuteNonQuery();
+                    int id = 0;
+                    command.CommandText = $"select id from ouis where (Mask = {oid}) and (Manufacturer = {manufacturerId})";
+                    
+                    using (SqliteDataReader dbReader = command.ExecuteReader())
+                    {
+                        SqliteCommand updateCommand = _connection.CreateCommand();
+                        if ((!dbReader.Read()) || ((id = dbReader.GetInt32(0)) == 0))
+                        {
+                            updateCommand.CommandText = "insert into ouis (Mask, Manufacturer) values " +
+                                $"({oid},{manufacturerId})";
+                            try
+                            {
+                                updateCommand.ExecuteNonQuery();
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine(ex.Message ); 
+                                Console.WriteLine($"{oid:X6} {manufacturerId,-7} {manufacturerName}");
+                            }
+                            inserted++;                            
+                        }                        
+                    }                          
                 }
                 #endregion
             }
