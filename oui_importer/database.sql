@@ -14,17 +14,18 @@ CREATE TABLE manufacturers (
   NameRu Text NOT NULL,
   Address Text NOT NULL,
   Country Int NOT NULL,
-    CONSTRAINT FK_Manufacturers_Country FOREIGN KEY (Id) REFERENCES countries(Id));
+    CONSTRAINT FK_Manufacturers_Country FOREIGN KEY (Country) REFERENCES countries(Id));
 CREATE TABLE ouis (
   Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
   Mask Int NOT NULL,
   Manufacturer Int NOT NULL,
-    CONSTRAINT FK_Ouis_Manufacturer FOREIGN KEY (Id) REFERENCES manufacturers(Id));
+    CONSTRAINT FK_Ouis_Manufacturer FOREIGN KEY (Manufacturer) REFERENCES manufacturers(Id));
     
  INSERT INTO countries ( 
    NameEn, NameRu,
    A2, A3, ISOCode)
  VALUES (
+    '', '', '', '', '000'), (
 	'Australia',				'Австралия','AU','AUS','036'), (
 	'Austria',					'Австрия', 'AT', 'AUT', '040'), (
 	'Azerbaijan',				'Азербайджан','AZ','AZE','031'), (
@@ -263,5 +264,6 @@ CREATE TABLE ouis (
 	'Japan', 'Япония', 'JP', 'JPN', '392'), (
 	'French Southern Territories', 'Французские южные территории (FR)', 'TF', 'ATF', '260'), (
 	'British Indian Ocean Territory', 'Британская территория Индийского океана (GB)', 'IO', 'IOT', '086'), (
-	'United States Minor Outlying Islands', 'Соединенные Штаты Америки Внешние малые острова (US)', 'UM', 'UMI', '581')
+	'United States Minor Outlying Islands', 'Соединенные Штаты Америки Внешние малые острова (US)', 'UM', 'UMI', '581'), (
+	'Republic of Serbia', 'Республика Сербия', 'RS', 'SRB', '688')
 	
