@@ -24,6 +24,9 @@
     <ClCompile Include="console.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="..\sqlite_test\sqlite3.c">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ping.h">
@@ -31,6 +34,12 @@
     </ClInclude>
     <ClInclude Include="console.h">
       <Filter>Исходные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="cping.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sqlite_test\sqlite3.h">
+      <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

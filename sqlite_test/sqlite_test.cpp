@@ -19,6 +19,11 @@ int main()
         std::cout << "Enter oid: ";
         char* line = new char[80];
         std::cin >> line;
+        if (line == "")
+        {
+            sqlite3_close(connection);
+            return 0;
+        }
         int oid;
         if (!str2oid(line, &oid))
         {
@@ -29,12 +34,12 @@ int main()
         }
 
         char* statement = new char[1024];
-        sprintf_s(statement, 1024, "select m.NameEn, c.Name, c.A3 from ouis o inner join manufactureres m on o.manufacturer = m.Id inner join countries c on manufacturer.country = c.Id where o.oid = %d",
+        sprintf_s(statement, 1024, "select m.NameEn, c.NameEn, c.A3 from ouis o inner join manufacturers m on o.manufacturer = m.Id inner join countries c on m.country = c.Id where o.Mask = %d",
             oid);
         sqlite3_stmt *pstmt;
         if (sqlite3_prepare(connection, statement, 1024, &pstmt, NULL) != SQLITE_OK)
         {
-            std::cout << "Error\n";
+            std::cout << sqlite3_errmsg(connection) << "\n";
             continue;
         }
         int code;

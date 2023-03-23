@@ -9,7 +9,7 @@
 #include <icmpapi.h>
 #include <windows.h>
 #include <winbase.h>
-
+#include "sqlite3.h"
 
 #pragma comment(lib, "iphlpapi.lib")
 #pragma comment(lib, "Ws2_32.lib")
@@ -17,6 +17,8 @@
 #ifdef cplusplus
 extern "C" {
 #endif
+
+sqlite3* connection;
 
 bool GetMAC(IPAddress address, char** mac)
 {
@@ -404,6 +406,87 @@ uint32_t CidrToMask(int cidr)
 	for (int i = 31 - cidr; i--; i > 0)
 		mask <<= 1;
 	return mask;
+}
+bool OpenDb()
+{
+	if (connection == NULL)
+	{
+		return sqlite3_open("oui.db3", &connection) == SQLITE_OK;
+	}
+	return true;
+}
+bool GetManufacturer(int oid, ManufacturerInfo* pInfo)
+{
+	if (connection == NULL)
+		return false;
+	sqlite3_stmt* pstmt;
+	char* statement = new char[1024];
+	sprintf_s(statement, 1024, "select m.NameEn, m.NameRu, m.Address, c.NameEn, c.A3 from ouis o inner join manufacturers m on o.manufacturer = m.Id inner join countries c on m.country = c.Id where o.Mask = %d", oid);
+	if (sqlite3_prepare(connection, statement, 1024, &pstmt, NULL) != SQLITE_OK)
+		return false;
+	if (sqlite3_step(pstmt) == SQLITE_ROW)
+	{
+		const unsigned char* buffer = sqlite3_column_text(pstmt, 0);
+		pInfo->NameEn = new char[strlen((char*)buffer) + 1];
+		strcpy(pInfo->NameEn, (char*)buffer);
+		buffer = sqlite3_column_text(pstmt, 1);
+		pInfo->NameRu = new char[strlen((char*)buffer) + 1];
+		strcpy(pInfo->NameRu, (char*)buffer);
+		buffer = sqlite3_column_text(pstmt, 2);
+		pInfo->Address = new char[strlen((char*)buffer) + 1];
+		strcpy(pInfo->Address, (char*)buffer);
+		buffer = sqlite3_column_text(pstmt, 3);
+		pInfo->Country = new char[strlen((char*)buffer) + 1];
+		strcpy(pInfo->Country, (char*)buffer);
+		buffer = sqlite3_column_text(pstmt, 4);
+		pInfo->CountryCode = new char[strlen((char*)buffer) + 1];
+		strcpy(pInfo->CountryCode, (char*)buffer);
+		return true;
+	}
+	else
+		return false;
+}
+
+bool CloseDb()
+{
+	if (connection != NULL)
+	{
+		int code;
+		code = sqlite3_close(connection);
+		connection = NULL;
+		return code == SQLITE_OK;
+	}
+	else
+		return true;
+}
+
+bool Manufacturer_Free(ManufacturerInfo* info)
+{
+	if (info->NameEn != NULL)
+	{
+		delete info->NameEn;
+		info->NameEn = NULL;
+	}
+	if (info->NameRu != NULL)
+	{
+		delete info->NameRu;
+		info->NameRu = NULL;
+	}
+	if (info - Address != NULL)
+	{
+		delete info->Address;
+		info->Address = NULL;
+	}
+	if (info->Country != NULL)
+	{
+		delete info->Country;
+		info->Country = NULL;
+	}
+	if (info->CountryCode != NULL)
+	{
+		delete info->CountryCode;
+		info->CountryCode = NULL;
+	}
 }
 #ifdef cplusplus
 }

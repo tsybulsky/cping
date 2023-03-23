@@ -129,12 +129,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\sqlite_test\sqlite3.c" />
     <ClCompile Include="console.cpp" />
     <ClCompile Include="cping.cpp" />
     <ClCompile Include="ping.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\sqlite_test\sqlite3.h" />
     <ClInclude Include="console.h" />
+    <ClInclude Include="cping.h" />
     <ClInclude Include="ping.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

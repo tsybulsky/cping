@@ -35,8 +35,18 @@ typedef struct _tagPingOptions
     bool    Continuos;        
     bool    ShowHelp;    
     bool    ShowStatistics;
+    bool    ShowManufacturer;
+    char* Filter;
     char* OutputFilename;
 } PingOptions, *PPingOptions; 
+
+typedef struct tagManufacturerInfo {
+    char* NameEn;
+    char* NameRu;
+    char* Address;
+    char* Country;
+    char* CountryCode;
+} ManufacturerInfo, *PPManufacturerInfo;
 
 typedef bool TextWriteProc(char* text);
 
@@ -53,5 +63,10 @@ bool SetCallback(TextWriteProc textWrite, InfoWriteProc infoWrite, TextWriteProc
 
 uint32_t CidrToMask(int cidr);
 bool GetMAC(IPAddress address, char** mac);
+
+bool OpenDb();
+bool GetManufacturer(int oid, ManufacturerInfo* pInfo);
+bool CloseDb();
+bool Manufacturer_Free(ManufacturerInfo*);
 
 #endif

@@ -60,6 +60,11 @@ void ShowHelp()
         "   Show help",
         "-s, --statistics",
         "   Show statistics after ping",
+        "-M, --manufacturer",
+        "   Show manufacturer's name regardless MAC code. if this options is used -m is",
+        "   set too for MAC resolution",
+        "-f, --filter",
+        "   Experimental options for output filtration",
         "NOTICE: if -th -rm and -ra options ommited -rm used  is set as default  option.",
         "  If specified only -th option host will be pinged one time for access cheking",
         NULL };
@@ -91,7 +96,9 @@ char* ErrorMsg;
 #define PARAM_AVGTIME       0x0100
 #define PARAM_ENDLESS       0x0200
 #define PARAM_RESOLVE       0x0400
-#define PARAM_MASK          0x07FF
+#define PARAM_MANUFACTURER  0x0800
+#define PARAM_FILTER        0x1000
+#define PARAM_MASK          0x1FFF
 
 #define FLAG_IS_SET(Flags, Flag) ((Flags & Flag) != 0)
 
