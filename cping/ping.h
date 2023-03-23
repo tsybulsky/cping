@@ -51,7 +51,7 @@ typedef struct tagManufacturerInfo {
 typedef bool TextWriteProc(char* text);
 
 typedef bool InfoWriteProc(uint32_t address, int size, int time,
-    int ttl, char* mac, char* name, int recevied, int total);
+    int ttl, char* mac, char* name, int recevied, int total, char* manufacturer);
 
 bool PingByList(IPAddress list[], int len, PingOptions options);
 bool Ping(IPAddress address, int pingSize, int timeOut, int* time, int* ttl);
@@ -63,10 +63,10 @@ bool SetCallback(TextWriteProc textWrite, InfoWriteProc infoWrite, TextWriteProc
 
 uint32_t CidrToMask(int cidr);
 bool GetMAC(IPAddress address, char** mac);
-
+bool GetMAC(IPAddress address, MACAddress*);
 bool OpenDb();
 bool GetManufacturer(int oid, ManufacturerInfo* pInfo);
 bool CloseDb();
-bool Manufacturer_Free(ManufacturerInfo*);
+void Manufacturer_Free(ManufacturerInfo*);
 
 #endif

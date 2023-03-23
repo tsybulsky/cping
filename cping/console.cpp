@@ -350,7 +350,7 @@ void InitConsole()
     coord.Y = cbi.srWindow.Bottom;
     WindowMax = (coord.Y << 8) | coord.X;
     ConsoleScreenRect = cbi.srWindow;
-    OldCodePage = (int)GetConsoleOutputCP;
+    OldCodePage = (int)GetConsoleOutputCP();
     SetConsoleOutputCP(866);
     SetConsoleCtrlHandler((PHANDLER_ROUTINE) & ConsoleEventProc, true);
     SetCapture((HWND)hConsoleInput);

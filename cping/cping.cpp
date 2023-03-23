@@ -128,6 +128,7 @@ bool ParseParams(int argc, char** argv)
     options.Retries = 1;
     options.Timeout = 500;
     options.ShowStatistics = false;
+    options.ShowManufacturer = false;
     int OptionsFlags = 0;
     int index = 1;
     while (index < argc)
@@ -232,7 +233,7 @@ bool ParseParams(int argc, char** argv)
         //PARAM_RESOLVE    
         if ((strcmp(param, "-r") == 0) || (strcmp(param, "--resolve") == 0))
         {
-            if ((OptionsFlags & 0x0040) != 0)
+            if (FLAG_IS_SET(OptionsFlags,PARAM_RESOLVE))
             {
                 ErrorMsg = (char*)"Option -r is already specified";
                 return false;
@@ -303,7 +304,17 @@ bool ParseParams(int argc, char** argv)
             OptionsFlags |= PARAM_SIZE;
             continue;
         }
-
+        if ((strcmp(param, "-M") == 0) || (strcmp(param, "--manufacturer") == 0))
+        {
+            if (FLAG_IS_SET(OptionsFlags, PARAM_MANUFACTURER))
+            {
+                ErrorMsg = (char*)"Option -M already specified";
+                return false;
+            }
+            options.ShowManufacturer = true;
+            OptionsFlags |= PARAM_MANUFACTURER;
+            continue;
+        }
         if (options.Mode != None)
         {
             ErrorMsg = (char*)"Pinging host already specified";
@@ -379,7 +390,7 @@ char* strcat(char* dest, size_t maxSize, ...)
 }
 
 bool _infoOut(uint32_t address, int size, int time,
-    int ttl, char* mac, char* name, int recevied, int total)
+    int ttl, char* mac, char* name, int recevied, int total, char* manufacturer)
 {
     char outputString[81]{};
     char tempValue[41]{};
@@ -419,7 +430,13 @@ bool _infoOut(uint32_t address, int size, int time,
             name = (char*)"";
         strcat(outputString, 80, outputString, "\xB3 ", name, NULL);
     }
-    return _textOut(outputString);
+    if (options.ShowManufacturer)
+    {
+        _textOut(outputString);
+        return _textOut(manufacturer);
+    }
+    else
+        return _textOut(outputString);
 }
 
 bool _progress(char* value)
@@ -471,7 +488,7 @@ int main(int argc, char** argv)
     InitConsole();   
     IPAddress* list;
     int count;
-    std::cout << "Extended ping utility\n©2023, Mikhail Tsybulski\n";
+    std::cout << "Extended ping utility\n(c)2023, Mikhail Tsybulski\n";
     if (!ParseParams(argc, argv))
     {
         std::cout << ErrorMsg << "\n";
@@ -524,6 +541,9 @@ int main(int argc, char** argv)
             FillIpList(options.Address, options.CIDR, &list, &count);
     }
     WSAStartup(0x0202, &wsaData);
+    if (options.ShowManufacturer)
+        if (!OpenDb())
+            options.ShowManufacturer = false;
     if ((options.Mask == -1) || (options.Mask == 32))   //указатель нормального режима пинга
     {
         PingNormalMode(options.Address, options, options.Continuos);
@@ -570,139 +590,7 @@ int main(int argc, char** argv)
         std::cout << line << std::endl;
         PingByList(list, count, options);
     }
+    if (options.ShowManufacturer)
+        CloseDb();
     WSACleanup();
-/*
-if FileExists(Value) then
-     begin
-       InputFilename := Value;
-       if Continuos then
-         raise Exception.Create('Задание файла списка адресов не допускается при задании флага /c')
-       else
-         ReadIPListFile(Value,List)
-     end
-    else
-     begin
-       if not StrToIP(Value,IP, Mask) then
-        begin
-          DoShowHelp;
-          Exit
-        end;
-       if (Mask <> -1)and(Continuos) then
-         raise Exception.Create('При непрерывном  пинге маска должна быть длиной 32 бита')
-       else
-         FillIPList(IP,Mask,List);
-       StdMode := Mask = -1
-     end;
-    if OutputFilename <> '' then
-     begin
-       try
-         AssignFile(fout,OutputFilename);
-         Rewrite(fout);
-       except
-         OutputFilename := ''
-       end
-     end;
-    if OutputFilename <> '' then
-     begin
-       WriteLn(fout,'Расширенная утилита пинга');
-       WriteLn(fout,'(c)2010, Цыбульский Михаил Григорьевич');
-       WriteLn(fout)
-     end;
-    if Mask = 0 then
-     begin
-       _TextOut('Сканироание адресов из файла "'+InputFilename+'"');
-       _TextOut('Всего адресов: '+IntToStr(Length(List)))
-     end
-    else
-     begin
-       if not StdMode then
-        begin
-          _TextOut('Сканирование диапазона: '+IPToStr(IP and Mask)+' - '+IPToStr(IP or (not Mask)));
-          _TextOut('Всего адресов: '+IntToStr((IP or (not Mask))-(IP and Mask)+1))
-        end
-     end;
-    if not StdMode then
-     begin
-       St :=   'IP Адрес        ';
-       if Options.ShowMAC then
-         St := St + '| MAC адрес         ';
-       if Options.Retries > 1 then
-         St := St + '| отп(пол) ';
-       if ShowTime then
-         St := St + '| Время ';
-       if ShowTTL then
-         St := St + '|  TTL ';
-       if Options.Resolve then
-         St := St + '| Имя хоста';
-       _TextOut(St);
-       for i := 1 to Length(St) do
-         St[i] := '-';
-       _TextOut(St)
-     end;
-    TextWriteProc := @_TextOut;
-    InfoWriteProc := @_InfoOut;
-    ProgressOutProc := @_ProgressOut;
-    if Mask = -1 then   //указатель нормального режима пинга
-     begin
-       if not ModeIsSet then
-         Options.Retries := 4;
-       PingNormalMode(IP,Options,Continuos)
-     end
-    else
-      PingByList(List,Options);
-    if OutputFilename <> '' then
-      CloseFile(fout);
-  except
-    on E:Exception do
-      Writeln(ANSI2OEM(E.Classname + ': ' + E.Message));
-  end;
-
-
-*/
 }
-
-
-/*
-
-
-function _Progressout(Value: string) : boolean;
-begin
-Write(ANSI2OEM(Value) + #13);
-Result: = not KeyPressed
-end;
-
-function _InfoOut(Addr: integer; Size: integer; Time: integer;
-TTL: integer; MAC: string; Name: string;
-Received, Total: integer) : boolean;
-var
-St : string;
-begin
-St : = Format('%-15s ', [IPToStr(Addr)]);
-if Options.ShowMAC then
-St : = St + Format('| %-17s ', [MAC]);
-if Options.Retries > 1 then
-St : = St + Format('| %8s ', [Format('%d(%d)', [Received, Total])]);
-if ShowTime then
-if Time = -1 then
-St : = St + '|   *   '
-else
-St : = St + Format('| %5d ', [Time]);
-if ShowTTL then
-St : = St + Format('| %4d ', [TTL]);
-if Options.Resolve then
-St : = St + '| ' + Name;
-Result: = _TextOut(St)
-end;
-
-*/
-
-// Запуск программы: CTRL+F5 или меню "Отладка" > "Запуск без отладки"
-// Отладка программы: F5 или меню "Отладка" > "Запустить отладку"
-
-// Советы по началу работы 
-//   1. В окне обозревателя решений можно добавлять файлы и управлять ими.
-//   2. В окне Team Explorer можно подключиться к системе управления версиями.
-//   3. В окне "Выходные данные" можно просматривать выходные данные сборки и другие сообщения.
-//   4. В окне "Список ошибок" можно просматривать ошибки.
-//   5. Последовательно выберите пункты меню "Проект" > "Добавить новый элемент", чтобы создать файлы кода, или "Проект" > "Добавить существующий элемент", чтобы добавить в проект существующие файлы кода.
-//   6. Чтобы снова открыть этот проект позже, выберите пункты меню "Файл" > "Открыть" > "Проект" и выберите SLN-файл.

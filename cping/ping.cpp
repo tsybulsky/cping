@@ -24,7 +24,7 @@ bool GetMAC(IPAddress address, char** mac)
 {
 	int res;
 	uint8_t raw[6];
-	int len;
+	int len = 0;
 	memset(&raw, 0, 6);
 	const char* nibbles = "0123456789ABCDEF";
 	res = SendARP(htonl((unsigned int)address), 0, &raw[0], (PULONG)&len);
@@ -47,6 +47,17 @@ bool GetMAC(IPAddress address, char** mac)
 		*mac = (char*)"N/A";
 		return false;
 	}
+}
+
+bool GetMAC(IPAddress address, MACAddress* mac)
+{
+	int res;
+	uint8_t raw[6];
+	int len =0;
+	memset(&raw, 0, 6);
+	const char* nibbles = "0123456789ABCDEF";
+	res = SendARP(htonl((unsigned int)address), 0, mac, (PULONG)&len);
+	return (res == 0);
 }
 
 char* IpToStr(IPAddress address)
@@ -221,7 +232,7 @@ void InternalTextWrite(const char* format, ...)
 		char* line = new char[513];
 		vsprintf_s(line, 513, format, args);
 		textWriteProc(line);
-		delete line;
+		delete[] line;
 	}
 }
 
@@ -252,6 +263,7 @@ bool PingByList(IPAddress list[], int len, PingOptions options)
 	int avgTime, maxTime, received, total;	
 	char* mac = NULL;
 	char* name = NULL;
+	char* manufacturer = NULL;
 	int rTime = 0, ttl = 0;
 	SetConsoleCtrlHandler(NULL, false);
 	SetConsoleCtrlHandler((PHANDLER_ROUTINE)&CtrlHandler, true);
@@ -264,7 +276,7 @@ bool PingByList(IPAddress list[], int len, PingOptions options)
 			char* address = IpToStr(list[i]);
 			sprintf_s(buffer,100, "Scanning (%d%%) adddress %s ...", lrint((i + 1.0) / len * 100), address);
 			progressOutProc(buffer);
-			delete buffer;
+			delete[] buffer;
 			delete address;
 		}
 		if (breakPing)
@@ -310,11 +322,27 @@ bool PingByList(IPAddress list[], int len, PingOptions options)
 				if (!GetHostName(list[i], &name))
 					name = NULL;
 			}
+			if (options.ShowManufacturer)
+			{
+				MACAddress binmac;
+				int oid;
+				if (GetMAC(list[i], &binmac))
+				{
+					oid = (binmac[0] << 16) | (binmac[1] << 8) | (binmac[0]);
+					ManufacturerInfo info;
+					if (GetManufacturer(oid, &info))
+						manufacturer = info.NameEn;
+					else
+						manufacturer = (char*)"";
+					Manufacturer_Free(&info);
+				}				
+			}
 		}
 		else
 		{
 			name = NULL;
 			mac = NULL;
+			manufacturer = NULL;
 		}
 		if (available || (!options.HideUnavailable))
 		{
@@ -323,7 +351,7 @@ bool PingByList(IPAddress list[], int len, PingOptions options)
 			memset(line, 32, 79);
 			if (progressOutProc != NULL)
 				progressOutProc(line);
-			infoWriteProc(list[i], options.PingSize, avgTime, ttl, mac, name, total, received);
+			infoWriteProc(list[i], options.PingSize, avgTime, ttl, mac, name, total, received, manufacturer);
 		}
 		if (name != NULL)
 		{
@@ -361,6 +389,19 @@ bool PingNormalMode(IPAddress address, PingOptions options, bool continuos)
 		if (Ping(address, options.PingSize, options.Timeout, &rTime, &ttl))
 		{
 			InternalTextWrite("Response from %s: response time = %ims, size %d bytes, ttl=%d\n", strAddress, rTime, options.PingSize, ttl);
+			if ((i == 0) && (options.ShowManufacturer))
+			{
+				ManufacturerInfo info;
+				MACAddress binmac;
+				if (!GetMAC(address, &binmac))
+				{
+					int oid = (binmac[0] << 16) | (binmac[1] << 8) | binmac[0];
+					if (GetManufacturer(oid, &info))
+					{
+						InternalTextWrite("%s, %s\n", info.NameEn, info.Country);
+					}
+				}
+			}
 			received++;
 			avgTime += rTime;
 			if (rTime < minTime)
@@ -403,10 +444,11 @@ uint32_t CidrToMask(int cidr)
 {
 	uint32_t mask = 0xFFFFFFFF;
 	cidr = (cidr - 1) & 0x1F;
-	for (int i = 31 - cidr; i--; i > 0)
+	for (int i = 31 - cidr; i > 0; i--)
 		mask <<= 1;
 	return mask;
 }
+
 bool OpenDb()
 {
 	if (connection == NULL)
@@ -427,20 +469,25 @@ bool GetManufacturer(int oid, ManufacturerInfo* pInfo)
 	if (sqlite3_step(pstmt) == SQLITE_ROW)
 	{
 		const unsigned char* buffer = sqlite3_column_text(pstmt, 0);
-		pInfo->NameEn = new char[strlen((char*)buffer) + 1];
-		strcpy(pInfo->NameEn, (char*)buffer);
+		size_t len = strlen((char*)buffer) + 1;
+		pInfo->NameEn = new char[len];
+		strcpy_s(pInfo->NameEn, len, (char*)buffer);
 		buffer = sqlite3_column_text(pstmt, 1);
-		pInfo->NameRu = new char[strlen((char*)buffer) + 1];
-		strcpy(pInfo->NameRu, (char*)buffer);
+		len = strlen((char*)buffer) + 1;
+		pInfo->NameRu = new char[len];
+		strcpy_s(pInfo->NameRu, len, (char*)buffer);
 		buffer = sqlite3_column_text(pstmt, 2);
-		pInfo->Address = new char[strlen((char*)buffer) + 1];
-		strcpy(pInfo->Address, (char*)buffer);
+		len = strlen((char*)buffer) + 1;
+		pInfo->Address = new char[len];
+		strcpy_s(pInfo->Address, len, (char*)buffer);
 		buffer = sqlite3_column_text(pstmt, 3);
-		pInfo->Country = new char[strlen((char*)buffer) + 1];
-		strcpy(pInfo->Country, (char*)buffer);
+		len = strlen((char*)buffer) + 1;
+		pInfo->Country = new char[len];
+		strcpy_s(pInfo->Country, len, (char*)buffer);
 		buffer = sqlite3_column_text(pstmt, 4);
-		pInfo->CountryCode = new char[strlen((char*)buffer) + 1];
-		strcpy(pInfo->CountryCode, (char*)buffer);
+		len = strlen((char*)buffer) + 1;
+		pInfo->CountryCode = new char[len];
+		strcpy_s(pInfo->CountryCode, len, (char*)buffer);
 		return true;
 	}
 	else
@@ -460,7 +507,7 @@ bool CloseDb()
 		return true;
 }
 
-bool Manufacturer_Free(ManufacturerInfo* info)
+void Manufacturer_Free(ManufacturerInfo* info)
 {
 	if (info->NameEn != NULL)
 	{
