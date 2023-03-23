@@ -23,9 +23,9 @@ sqlite3* connection;
 bool GetMAC(IPAddress address, char** mac)
 {
 	int res;
-	uint8_t raw[6];
-	int len = 0;
-	memset(&raw, 0, 6);
+	int len = 6;
+	uint8_t raw[6];	
+	memset(&raw, 0, len);
 	const char* nibbles = "0123456789ABCDEF";
 	res = SendARP(htonl((unsigned int)address), 0, &raw[0], (PULONG)&len);
 	if (res == 0)
@@ -53,8 +53,8 @@ bool GetMAC(IPAddress address, MACAddress* mac)
 {
 	int res;
 	uint8_t raw[6];
-	int len =0;
-	memset(&raw, 0, 6);
+	int len = 6;
+	memset(&raw, 0, len);
 	const char* nibbles = "0123456789ABCDEF";
 	res = SendARP(htonl((unsigned int)address), 0, mac, (PULONG)&len);
 	return (res == 0);
@@ -331,10 +331,12 @@ bool PingByList(IPAddress list[], int len, PingOptions options)
 					oid = (binmac[0] << 16) | (binmac[1] << 8) | (binmac[0]);
 					ManufacturerInfo info;
 					if (GetManufacturer(oid, &info))
+					{
 						manufacturer = info.NameEn;
+						Manufacturer_Free(&info);
+					}
 					else
-						manufacturer = (char*)"";
-					Manufacturer_Free(&info);
+						manufacturer = NULL;					
 				}				
 			}
 		}

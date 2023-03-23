@@ -372,11 +372,13 @@ char* strcat(char* dest, size_t maxSize, ...)
     int len = 0;
     char* item, * end = dest + maxSize-1;
     char* index = dest;
+    while (*(index++) != NULL);
+    index--;
     while ((item = va_arg(p, char*)) != NULL)
     {
-        while ((*(index++) = *item) != 0)
+        while ((*(index++) = *(item++)) != 0)
         {            
-            if (++item >= end)
+            if (index >= end)
             {
                 *(end-1) = 0;
                 return dest;                
@@ -402,35 +404,35 @@ bool _infoOut(uint32_t address, int size, int time,
             sprintf_s(tempValue, 30, "\xB3 %-17s ", mac);
         else
             sprintf_s(tempValue, 30, "\xB3 %-17s ", "");
-        strcat(outputString, 81, outputString, tempValue, NULL);
+        strcat(outputString, 81, tempValue, NULL);
     }
     if (options.Retries > 1)
     {
         sprintf_s(tempValue, 30, "%d(%d)", recevied, total);        
-        strcat(outputString, 81, "\xB3 ", outputString, tempValue, NULL);
+        strcat(outputString, 81, "\xB3 ", tempValue, NULL);
     }
     if (options.ShowTime)
     {
         if (time == -1)
-            strcat(outputString, 80, outputString, "\xB3   *   ", NULL);
+            strcat(outputString, 80, "\xB3   *   ", NULL);
         else
         {
             sprintf_s(tempValue, 30, "\xB3 %5d ", time);
-            strcat(outputString, 80, outputString, tempValue, NULL);
+            strcat(outputString, 80, tempValue, NULL);
         }
     }
     if (options.ShowTTL)
     {
         sprintf_s(tempValue, 30, "\xB3 %4d ", ttl);
-        strcat(outputString, 80, outputString, tempValue, NULL);
+        strcat(outputString, 80, tempValue, NULL);
     }
     if (options.Resolve)
     {
         if (name == NULL)
             name = (char*)"";
-        strcat(outputString, 80, outputString, "\xB3 ", name, NULL);
+        strcat(outputString, 80, "\xB3 ", name, NULL);
     }
-    if (options.ShowManufacturer)
+    if ((options.ShowManufacturer)&&(manufacturer != NULL))
     {
         _textOut(outputString);
         return _textOut(manufacturer);
@@ -475,7 +477,9 @@ void FillIpList(IPAddress address, int cidr, IPAddress** list, int* count)
             {
                 for (int p4 = d1; p4 <= d2; p4++)
                 {
-                    *ptr++ = (IPAddress)(((p1 << 24) | (p2 << 16) | (p3 << 8) | p4));
+                    IPAddress address = (IPAddress)(((p1 << 24) | (p2 << 16) | (p3 << 8) | p4));
+                    if (((address & (~mask)) != 0) && ((address | mask) != 0xFFFFFFFF))
+                        *ptr++ = address;
                 }
             }
         }
