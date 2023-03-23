@@ -22,20 +22,16 @@ sqlite3* connection;
 
 bool GetMAC(IPAddress address, char** mac)
 {
-	int res;
-	int len = 6;
-	uint8_t raw[6];	
-	memset(&raw, 0, len);
+	MACAddress macAddress;
 	const char* nibbles = "0123456789ABCDEF";
-	res = SendARP(htonl((unsigned int)address), 0, &raw[0], (PULONG)&len);
-	if (res == 0)
+	if (GetMAC(address, &macAddress))	
 	{
 		*mac = new char[19];
 		char* j = *mac;
 		for (int i = 0; i < 6; i++)
 		{
-			*j++ = nibbles[(raw[i] >> 4) & 0x0F];
-			*j++ = nibbles[raw[i] & 0x0F];
+			*j++ = nibbles[(macAddress[i] >> 4) & 0x0F];
+			*j++ = nibbles[macAddress[i] & 0x0F];
 			if (i < 5)
 				*j++ = '-';
 		}
@@ -50,14 +46,9 @@ bool GetMAC(IPAddress address, char** mac)
 }
 
 bool GetMAC(IPAddress address, MACAddress* mac)
-{
-	int res;
-	uint8_t raw[6];
+{	
 	int len = 6;
-	memset(&raw, 0, len);
-	const char* nibbles = "0123456789ABCDEF";
-	res = SendARP(htonl((unsigned int)address), 0, mac, (PULONG)&len);
-	return (res == 0);
+	return SendARP(htonl((unsigned int)address), 0, mac, (PULONG)&len) == 0;
 }
 
 char* IpToStr(IPAddress address)
@@ -113,7 +104,7 @@ bool GetHostName(IPAddress address, char** name)
 	struct sockaddr_in sa;
 	memset(&sa, 0, sizeof(struct sockaddr));
 	sa.sin_family = AF_INET;
-	sa.sin_addr.s_addr = address;
+	sa.sin_addr.s_addr = htonl(address);
 	sa.sin_port = 0;
 	*name = new char[80];
 	int error_no;
@@ -261,14 +252,15 @@ bool PingByList(IPAddress list[], int len, PingOptions options)
 {
 	bool available = false;
 	int avgTime, maxTime, received, total;	
-	char* mac = NULL;
-	char* name = NULL;
-	char* manufacturer = NULL;
+	char* mac;
+	char* name;
+	char* manufacturer;
 	int rTime = 0, ttl = 0;
 	SetConsoleCtrlHandler(NULL, false);
 	SetConsoleCtrlHandler((PHANDLER_ROUTINE)&CtrlHandler, true);
 	for (int i = 0; i < len; i++)
 	{
+		mac = name = manufacturer = NULL;
 		if (progressOutProc != NULL)
 		{
 			char* buffer = new char[100];
@@ -328,11 +320,13 @@ bool PingByList(IPAddress list[], int len, PingOptions options)
 				int oid;
 				if (GetMAC(list[i], &binmac))
 				{
-					oid = (binmac[0] << 16) | (binmac[1] << 8) | (binmac[0]);
+					oid = (binmac[0] << 16) | (binmac[1] << 8) | (binmac[2]);
 					ManufacturerInfo info;
 					if (GetManufacturer(oid, &info))
 					{
-						manufacturer = info.NameEn;
+						int len = strlen(info.NameEn) + 1;
+						manufacturer = new char[len];
+						strcpy_s(manufacturer, len, info.NameEn);						
 						Manufacturer_Free(&info);
 					}
 					else
@@ -357,10 +351,12 @@ bool PingByList(IPAddress list[], int len, PingOptions options)
 		}
 		if (name != NULL)
 		{
-			delete name;
+			delete[] name;
 		}
 		if (mac != NULL)
-			delete mac;
+			delete[] mac;
+		if (manufacturer != NULL)
+			delete[] manufacturer;
 	}
 	SetConsoleCtrlHandler((PHANDLER_ROUTINE)&CtrlHandler, false);
 	return true;

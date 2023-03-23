@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\user\\source\\repos\\cping\\oui_importer\\oui_importer.csproj": {}
+    "C:\\Users\\CM\\source\\repos\\cping\\oui_importer\\oui_importer.csproj": {}
   },
   "projects": {
-    "C:\\Users\\user\\source\\repos\\cping\\oui_importer\\oui_importer.csproj": {
+    "C:\\Users\\CM\\source\\repos\\cping\\oui_importer\\oui_importer.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\user\\source\\repos\\cping\\oui_importer\\oui_importer.csproj",
+        "projectUniqueName": "C:\\Users\\CM\\source\\repos\\cping\\oui_importer\\oui_importer.csproj",
         "projectName": "oui_importer",
-        "projectPath": "C:\\Users\\user\\source\\repos\\cping\\oui_importer\\oui_importer.csproj",
-        "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\user\\source\\repos\\cping\\oui_importer\\obj\\",
+        "projectPath": "C:\\Users\\CM\\source\\repos\\cping\\oui_importer\\oui_importer.csproj",
+        "packagesPath": "C:\\Users\\CM\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\CM\\source\\repos\\cping\\oui_importer\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\user\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\CM\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -61,7 +61,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.103\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.202\\RuntimeIdentifierGraph.json"
         }
       }
     }

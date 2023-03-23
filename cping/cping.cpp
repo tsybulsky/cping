@@ -169,6 +169,7 @@ bool ParseParams(int argc, char** argv)
             }
             options.OutputFilename = argv[index++];
             OptionsFlags |= PARAM_OUTPUTFILE;
+            continue;
         }
         //PARAM_MAC - --mac
         if ((strcmp(param, "-m") == 0) || (strcmp(param, "--mac") == 0))
@@ -553,45 +554,59 @@ int main(int argc, char** argv)
         PingNormalMode(options.Address, options, options.Continuos);
     }
     else
-    {        
+    {               
         char* line = new char[81];
-        memset(line, '\xC4', 80);
-        line[80] = '\0';
-        std::cout << "IP Address      ";
-        int index = 16;
+        char* header = new char[81];
+        //memset(line, '\xC4', 80);
+        memset(header, 0, 81);
+        //memset(line, '-', 80);
+        //line[80] = '\0';        
+        strcpy_s(header, 80, "IP Address      ");
+        strcpy_s(line, 80, "----------------");
+        //int index = 16;
         if (options.ShowMAC)
         {
-            std::cout << "\xB3 MAC address       ";                        
-            line[index] = '\xC5';
-            index += 20;
+            strcat(header, 81, "| MAC address       ", NULL);
+            strcat(line, 80, "+-------------------", NULL);
+            //std::cout << "\xB3 MAC address       ";                        
+            //line[index] = '+';//'\xC5';
+            //index += 20;
         }
         if (options.Retries > 1)
         {
-            std::cout << "\xB3 send(rec)";
-            
-            line[index] = '\xC5';
-            index += 11;
+            //std::cout << "\xB3 send(rec)";
+            strcat(header, 81, "| send(rec)",NULL);
+            strcat(line, 81, "+----------", NULL);
+            //line[index] = '+';//'\xC5';
+            //index += 11;
         }
         if (options.ShowTime)
         {
-            std::cout << "\xB3 Time  ";
-            
-            line[index] = '\xC5';
-            index += 8;
+            //std::cout << "\xB3 Time  ";            
+            //line[index] = '+';//'\xC5';            
+            strcat(header, 81, "| Time  ", NULL);
+            strcat(line,81,    "+-------",NULL);
+            //index += 8;
         }
         if (options.ShowTTL)
         {
-            std::cout << "\xB3  TTL ";
+            strcat(header, 81, "|  TTL ", NULL);
+            strcat(line, 81, "+------", NULL);
+            //std::cout << "\xB3  TTL ";
             
-            line[index] = '\xC5';
-            index += 7;
+           // line[index] = '\xC5';
+            //index += 7;
         }
         if (options.Resolve)
         {
-            std::cout << "\xB3 HostName " << std::endl;
-            line[index] = '\xC5';
+            strcat(header, 81, "| HostName ", NULL);
+            strcat(line, 81, "+----------", NULL);
+            //std::cout << "\xB3 HostName " << std::endl;
+            //line[index] = '\xC5';
         }
-        std::cout << line << std::endl;
+        _textOut(header);
+        _textOut(line);
+        //std::cout << line << std::endl;
         PingByList(list, count, options);
     }
     if (options.ShowManufacturer)
