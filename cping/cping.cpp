@@ -488,6 +488,57 @@ void FillIpList(IPAddress address, int cidr, IPAddress** list, int* count)
 }
 WSADATA wsaData;
 
+bool ReadIpListFile(char* filename, IPAddress** list, int* count)
+{
+    FILE* f;
+    char* buffer = new char[256];
+    try
+    {        
+        IPAddress address;
+        int mask = 32;
+        int i = 0;
+        *count = 0;
+        if (fopen_s(&f, (const char*)filename, "rt"))
+            return false;
+        while (fgets(buffer, 256, f) != NULL)
+        {
+            
+            if (StrToIp(buffer, &address, &mask))
+            {
+                (*count)++;
+            }
+            else
+            {
+                fclose(f);
+                delete[] buffer;
+                return false;
+            }
+        }
+        fseek(f, 0, SEEK_SET);
+        *list = new IPAddress[*count];
+        IPAddress* ptr = *list;
+        while (fgets(buffer, 256, f) != NULL)
+        {
+            if (!StrToIp(buffer, &address, &mask))
+            {
+                delete[] buffer;
+                delete *list;
+                fclose(f);
+                return false;
+            }
+            *ptr++ = address;
+        }
+        fclose(f);
+        delete[] buffer;
+        return true;
+    }
+    catch (...)
+    {
+        if (f != NULL)
+            fclose(f);
+        return false;
+    }
+}
 int main(int argc, char** argv)
 {
     InitConsole();   
@@ -533,7 +584,8 @@ int main(int argc, char** argv)
             return -3;
         }
         else
-            return 0;// ReadIpListFile(options.AddressFilename, &list, &count);
+            if (!ReadIpListFile(options.AddressFilename, &list, &count))
+                return -4;
     }
     else
     {
@@ -557,56 +609,36 @@ int main(int argc, char** argv)
     {               
         char* line = new char[81];
         char* header = new char[81];
-        //memset(line, '\xC4', 80);
-        memset(header, 0, 81);
-        //memset(line, '-', 80);
-        //line[80] = '\0';        
+        memset(header, 0, 81);       
         strcpy_s(header, 80, "IP Address      ");
         strcpy_s(line, 80, "----------------");
-        //int index = 16;
         if (options.ShowMAC)
         {
             strcat(header, 81, "| MAC address       ", NULL);
             strcat(line, 80, "+-------------------", NULL);
-            //std::cout << "\xB3 MAC address       ";                        
-            //line[index] = '+';//'\xC5';
-            //index += 20;
         }
         if (options.Retries > 1)
         {
-            //std::cout << "\xB3 send(rec)";
             strcat(header, 81, "| send(rec)",NULL);
             strcat(line, 81, "+----------", NULL);
-            //line[index] = '+';//'\xC5';
-            //index += 11;
         }
         if (options.ShowTime)
-        {
-            //std::cout << "\xB3 Time  ";            
-            //line[index] = '+';//'\xC5';            
+        {          
             strcat(header, 81, "| Time  ", NULL);
             strcat(line,81,    "+-------",NULL);
-            //index += 8;
         }
         if (options.ShowTTL)
         {
             strcat(header, 81, "|  TTL ", NULL);
             strcat(line, 81, "+------", NULL);
-            //std::cout << "\xB3  TTL ";
-            
-           // line[index] = '\xC5';
-            //index += 7;
         }
         if (options.Resolve)
         {
             strcat(header, 81, "| HostName ", NULL);
             strcat(line, 81, "+----------", NULL);
-            //std::cout << "\xB3 HostName " << std::endl;
-            //line[index] = '\xC5';
         }
         _textOut(header);
         _textOut(line);
-        //std::cout << line << std::endl;
         PingByList(list, count, options);
     }
     if (options.ShowManufacturer)

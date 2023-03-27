@@ -72,6 +72,8 @@ bool StrToIp(char* value, IPAddress* address, int* mask)
 	{
 		if (value[i] == ' ')
 			continue;
+		if (value[i] == '\n')
+			break;
 		if (value[i] == '.')
 		{
 			*address = ((*address & 0xFFFFFF00) | octet) << 8;
@@ -91,7 +93,9 @@ bool StrToIp(char* value, IPAddress* address, int* mask)
 			octet = octet * 10 + (value[i] - 0x30);
 			if (octet > 255)
 				return false;
+			continue;
 		}
+		return false;
 	}
 	*address = ((*address & 0xFFFFFF00) | octet);
 	char* strMask = &value[maskStart + 1];

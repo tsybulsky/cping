@@ -9,11 +9,11 @@ typedef uint8_t MACAddress[6];
 
 typedef uint32_t IPAddress;
 
-typedef enum PingMode {
+typedef enum tagPingMode {
     None,
     Address,
     File
-};
+} PingMode;
 
 typedef struct _tagPingOptions
 {
