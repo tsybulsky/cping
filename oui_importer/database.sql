@@ -426,74 +426,103 @@ CREATE TABLE WKPorts (
 	Protocol Int,	--Number of protocol in IP packet
 	PortNo int,
 	Status int,		--Protocol status: 0 - unknown, 1 - reserved, 2 - unofficial, 3 - assigned
+	Priority int,	--Priority of the port. 0 - highest priority, 1 - high and so on
 	Description Text
 );	
 
 insert into WKPorts (
 	Protocol, PortNo, Status, Description)
 values (
-//Port	TCP (6)	UDP (17) SCTP (132)	DCCP (33)	Description
-	  6, 0, 5, 'In programming APIs (not in communication between hosts), requests a system-allocated (dynamic) port[6]'), (
-	 17, 0, 5, 'In programming APIs (not in communication between hosts), requests a system-allocated (dynamic) port[6]'), (
-     32, 0, 5, 'In programming APIs (not in communication between hosts), requests a system-allocated (dynamic) port[6]'), (
-    133, 0, 5, 'In programming APIs (not in communication between hosts), requests a system-allocated (dynamic) port[6]'), (
-	  6, 1, 1, 'TCP Port Service Multiplexer (TCPMUX). Historic. Both TCP and UDP have been assigned to TCPMUX by IANA,[2] but by design only TCP is specified.[7]'), (
-     17, 1, 3, 'TCP Port Service Multiplexer (TCPMUX). Historic. Both TCP and UDP have been assigned to TCPMUX by IANA,[2] but by design only TCP is specified.[7]'), ( 
-      6, 2, 3, 'compressnet (Management Utility)[3]'), (
+--Protocol values
+--TCP		6	
+--UDP		17 
+--SCTP		132	
+--DCCP		33
+--Status
+--unknown		0 (priority 26+)
+--yes			1 assigned by IANA and is standartized, specified or widely used
+--				priority (1-5)
+--unofficial	2 not assigned by IANA but widely used, standartized or specified
+--				priority (6-10)
+--assigned		3 assigned by IANA but is not standartized, specified or widely used
+--				priority (11-15)
+--no			4 not assigned by IANA and is not standartized, specified or widely used
+--				priority (15-20)
+--reserved		5 reserved by IANA
+--				priotiry (21-25)
+--first TCP ports
+	  6,    0, 5, 25, 'In programming APIs (not in communication between hosts), requests a system-allocated (dynamic) port[6]'), (
+	  6,    1, 1,  5, 'TCP Port Service Multiplexer (TCPMUX). Historic. Both TCP and UDP have been assigned to TCPMUX by IANA,[2] but by design only TCP is specified.[7]'), (
+	  6,    2, 3, 15, 'compressnet (Management Utility)[3]'), (
+	  6,    3, 3, 15, 'compressnet (Compression Process)[3]'), (
+	  6,    5, 3, 15, 'Remote Job Entry was historically using socket 5 in its old socket form, while MIB PIM has identified it as TCP/5'), (
+      6,    7, 1,  3, 'Echo Protocol'),(
+	  6,    9, 1,  5, 'Discard Protocol'), (
+      6,   11, 1,  5, 'Active Users (systat service)'), (
+      6,   13, 1,  5, 'Daytime Protocol'), (
+      6,   15, 2, 10, 'Previously netstat service'), (
+      6,   17, 1,  5, 'Quote of the Day (QOTD)'), (
+      6,   18, 1,  5, 'Message Send Protocol'), (
+      6,   19, 1,  5, 'Character Generator Protocol (CHARGEN)'), (
+      6,   20, 1,  1, 'File Transfer Protocol (FTP) data transfer'), (
+      6,   21, 1,  1, 'File Transfer Protocol (FTP) control (command)'), (
+	  6,   22, 1,  1, 'Secure Shell (SSH), secure logins, file transfers (scp, sftp) and port forwarding'), (
+	  6,   23, 1,  1, 'Telnet protocol—unencrypted text communications'), (
+	  6,   25, 1,  1, 'Simple Mail Transfer Protocol (SMTP), used for email routing between mail servers'), (
+      6,   27, 3, 15, 'nsw-fe (NSW User System FE)'), (
+      6,   28, 2, 10, 'Palo Alto Networks'' Panorama High Availability (HA) sync encrypted port.'), (
+      6,   29, 3, 15, 'msg-icp (MSG ICP)'), (
+      6,   31, 3, 15, 'msg-auth (MSG Authentication)'), (
+	  6,   33, 3, 15, 'dsp (Display Support Protocol)'), (
+	  6,   37, 1,  4, 'Time Protocol'), (
+	  6,   38, 3, 15, 'rap (Route Access Protocol)/rlp (Resource Location Protocol)'), (
+	  6,   41, 3, 15, 'graphics (Graphics)'), (
+	  6,   42, 3, 15, 'Host Name Server Protocol'), (
+      6,   43, 1,  3, 'WHOIS protocol'), ( 
+      6,   44, 3, 15, 'mpm-flags (MPM FLAGS Protocol)'), (
+	  6,   45, 3, 15, 'mpm (Message Processing Module [recv])'), (
+	  6,   46, 3, 15, 'mpm-snd (MPM [default send])'), (
+	  6,   47, 5, 25, ''), (
+      6,   48, 3, 15, 'auditd (Digital Audit Daemon)'), ( 
+      6,   49, 1,  5, 'TACACS Login Host protocol. TACACS+, still in draft which is an improved but distinct version of TACACS, only uses TCP 49.'), (
+	  6,   50, 3, 15, 're-mail-ck (Remote Mail Checking Protocol)'), (	   
+	  6,   51, 5, 25, 'Historically used for Interface Message Processor logical address management, entry has been removed by IANA on 2013-05-25'), (
+	  6,   52, 3, 15, 'Xerox Network Systems (XNS) Time Protocol. Despite this port being assigned by IANA, the service is meant to work on SPP (ancestor of IPX/SPX), instead of TCP/IP'), (
+	  6,   53, 1,  1, 'Domain Name System (DNS)'), (
+	  6,   54, 3, 15, 'Xerox Network Systems (XNS) Clearinghouse (Name Server). Despite this port being assigned by IANA, the service is meant to work on SPP (ancestor of IPX/SPX), instead of TCP/IP'), (
+	  6,   55, 3, 15, 'isi-gl (ISI Graphics Language)'), (
+	  6,   56, 3, 15, 'Xerox Network Systems (XNS) Authentication Protocol. Despite this port being assigned by IANA, the service is meant to work on SPP (ancestor of IPX/SPX), instead of TCP/IP'), (
+	  6,   58, 3, 15, 'Xerox Network Systems (XNS) Mail. Despite this port being assigned by IANA, the service is meant to work on SPP (ancestor of IPX/SPX), instead of TCP/IP'), (
+      6,   61, 5, 25, 'Historically assigned to the NIFTP-Based Mail protocol,[37] but was never documented in the related IEN.[38] The port number entry was removed from IANA''s registry on 2017-05-18'), (
+      6,   62, 3, 15, 'acas (ACA Services)'), (
+	  6,   63, 3, 15, 'whoispp (whois++)'), (
+	  6,   64, 3, 15, 'covia (Communications Integrator (CI))'), (
+      6,   65, 3, 15, 'tacacs-ds (TACACS-Database Service)'), (
+	  6,   66, 3, 15, 'sql-net (Oracle SQL*NET)'), (
+	  6,   67, 3, 15, 'Bootstrap Protocol (BOOTP) server; also used by Dynamic Host Configuration Protocol (DHCP)'), (
+	  6,   68, 3, 15, 'Bootstrap Protocol (BOOTP) client; also used by Dynamic Host Configuration Protocol (DHCP)'), (
+	  6,   69, 3, 15, 'Trivial File Transfer Protocol (TFTP)'), (
+      6,   70, 1,  1, 'Gopher protocol'), (
+      6,   71, 1,  2, 'NETRJS protocol'), (
+	  6,   72, 1,  2, 'NETRJS protocol'), (
+	  6,   73, 1,  2, 'NETRJS protocol'), (
+      6,   74, 1,  2, 'NETRJS protocol'), (
+      6,   76, 3, 15, ''), (
+	  6,   78, 3, 15, ''), (
+      6,   79, 1,  2, ''), (
+		  
+	  17, 0, 5, 'In programming APIs (not in communication between hosts), requests a system-allocated (dynamic) port'), (
+	 17, 1, 3, 'TCP Port Service Multiplexer (TCPMUX). Historic. Both TCP and UDP have been assigned to TCPMUX by IANA, but by design only TCP is specified.[7]'), (      
+	 32, 0, 5, 'In programming APIs (not in communication between hosts), requests a system-allocated (dynamic) port'), (
+    133, 0, 5, 'In programming APIs (not in communication between hosts), requests a system-allocated (dynamic) port'), (
+
+     
+      
      17, 2, 3, 'compressnet (Management Utility)[3]'), (
-      6, 3, 3, 'compressnet (Compression Process)[3]'), (
+     
      17, 3, 3, 'compressnet (Compression Process)[3]'), (
-5	Assigned			Remote Job Entry[8] was historically using socket 5 in its old socket form, while MIB PIM has identified it as TCP/5[9] and IANA has assigned both TCP and UDP 5 to it.
-7	Yes			Echo Protocol[10][11]
-9	Yes	Yes[12]	Assigned	Discard Protocol[13]
-No	Unofficial			Wake-on-LAN[14]
-11	Yes			Active Users (systat service)[15][16]
-13	Yes			Daytime Protocol[17]
-15	Unofficial	No			Previously netstat service[2][15]
-17	Yes			Quote of the Day (QOTD)[18]
-18	Yes			Message Send Protocol[19][20]
-19	Yes			Character Generator Protocol (CHARGEN)[21]
-20	Yes	Assigned	Yes[12]		File Transfer Protocol (FTP) data transfer[11]
-21	Yes	Assigned	Yes[12]		File Transfer Protocol (FTP) control (command)[11][12][22][23]
-22	Yes	Assigned	Yes[12]		Secure Shell (SSH),[11] secure logins, file transfers (scp, sftp) and port forwarding
-23	Yes	Assigned			Telnet protocol—unencrypted text communications[11][24]
-25	Yes	Assigned			Simple Mail Transfer Protocol (SMTP),[11][25] used for email routing between mail servers
-27	Assigned			nsw-fe (NSW User System FE)[3]
-28	Unofficial				Palo Alto Networks' Panorama High Availability (HA) sync encrypted port.[26]
-29	Assigned			msg-icp (MSG ICP)[3]
-31	Assigned			msg-auth (MSG Authentication)[3]
-33	Assigned			dsp (Display Support Protocol)[3]
-37	Yes			Time Protocol[27]
-38	Assigned			rap (Route Access Protocol)[3]
-38	Assigned			rlp (Resource Location Protocol)[3]
-41	Assigned			graphics (Graphics)[3]
-42	Assigned	Yes			Host Name Server Protocol[28]
-43	Yes	Assigned			WHOIS protocol[29][30][31]
-44	Assigned			mpm-flags (MPM FLAGS Protocol)[3]
-45	Assigned			mpm (Message Processing Module [recv])[3]
-46	Assigned			mpm-snd (MPM [default send])[3]
-47	Reserved	Reserved			
-48	Assigned			auditd (Digital Audit Daemon)[3]
-49	Yes			TACACS Login Host protocol.[32] TACACS+, still in draft which is an improved but distinct version of TACACS, only uses TCP 49.[33]
-50	Assigned			re-mail-ck (Remote Mail Checking Protocol)[3]
-51	Reserved	Reserved			Historically used for Interface Message Processor logical address management,[34] entry has been removed by IANA on 2013-05-25
-52	Assigned			Xerox Network Systems (XNS) Time Protocol. Despite this port being assigned by IANA, the service is meant to work on SPP (ancestor of IPX/SPX), instead of TCP/IP.[35]
-53	Yes	Yes			Domain Name System (DNS)[36][11]
-54	Assigned			Xerox Network Systems (XNS) Clearinghouse (Name Server). Despite this port being assigned by IANA, the service is meant to work on SPP (ancestor of IPX/SPX), instead of TCP/IP.[35]
-55	Assigned			isi-gl (ISI Graphics Language)[3]
-56	Assigned			Xerox Network Systems (XNS) Authentication Protocol. Despite this port being assigned by IANA, the service is meant to work on SPP (ancestor of IPX/SPX), instead of TCP/IP.[35]
-58	Assigned			Xerox Network Systems (XNS) Mail. Despite this port being assigned by IANA, the service is meant to work on SPP (ancestor of IPX/SPX), instead of TCP/IP.[35]
-61	Reserved	Reserved			Historically assigned to the NIFTP-Based Mail protocol,[37] but was never documented in the related IEN.[38] The port number entry was removed from IANA's registry on 2017-05-18.[2]
-62	Assigned			acas (ACA Services)[3]
-63	Assigned			whoispp (whois++)[3]
-64	Assigned			covia (Communications Integrator (CI))[3]
-65	Assigned			tacacs-ds (TACACS-Database Service)[3]
-66	Assigned			sql-net (Oracle SQL*NET)[3]
-67	Assigned	Yes			Bootstrap Protocol (BOOTP) server;[11] also used by Dynamic Host Configuration Protocol (DHCP)
-68	Assigned	Yes			Bootstrap Protocol (BOOTP) client;[11] also used by Dynamic Host Configuration Protocol (DHCP)
-69	Assigned	Yes			Trivial File Transfer Protocol (TFTP)[11][39][40][41]
-70	Yes	Assigned			Gopher protocol[42]
-71–74	Yes	Yes			NETRJS protocol[43][44][45]
+
+
 76	Assigned			deos (Distributed External Object Store)[3]
 78	Assigned			vettcp (vettcp)[3]
 79	Yes	Assigned			Finger protocol[11][46][47]
