@@ -1,16 +1,16 @@
 {
   "version": 2,
-  "dgSpecHash": "FSxbs18bqchxlcIYbllHAnoqxGy4azFpnQjyl46vSIRpNaQJgFlBlWPZxA3FR8ZUwsTiGnK2wM4ZcTGICU49eA==",
+  "dgSpecHash": "bLFss1B3FP7P9sKSkyTBAbO/JJz8ZWOCpASE9L++YZcaXIjJQWa3YldCBXeEJSNY/g58qyO6OfBKw6vv6R41Vw==",
   "success": true,
-  "projectFilePath": "C:\\Users\\CM\\source\\repos\\cping\\oui_importer\\oui_importer.csproj",
+  "projectFilePath": "C:\\Users\\user\\source\\repos\\cping\\oui_importer\\oui_importer.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\CM\\.nuget\\packages\\microsoft.data.sqlite\\7.0.4\\microsoft.data.sqlite.7.0.4.nupkg.sha512",
-    "C:\\Users\\CM\\.nuget\\packages\\microsoft.data.sqlite.core\\7.0.4\\microsoft.data.sqlite.core.7.0.4.nupkg.sha512",
-    "C:\\Users\\CM\\.nuget\\packages\\sqlitepclraw.bundle_e_sqlite3\\2.1.4\\sqlitepclraw.bundle_e_sqlite3.2.1.4.nupkg.sha512",
-    "C:\\Users\\CM\\.nuget\\packages\\sqlitepclraw.core\\2.1.4\\sqlitepclraw.core.2.1.4.nupkg.sha512",
-    "C:\\Users\\CM\\.nuget\\packages\\sqlitepclraw.lib.e_sqlite3\\2.1.4\\sqlitepclraw.lib.e_sqlite3.2.1.4.nupkg.sha512",
-    "C:\\Users\\CM\\.nuget\\packages\\sqlitepclraw.provider.e_sqlite3\\2.1.4\\sqlitepclraw.provider.e_sqlite3.2.1.4.nupkg.sha512",
-    "C:\\Users\\CM\\.nuget\\packages\\system.memory\\4.5.3\\system.memory.4.5.3.nupkg.sha512"
+    "C:\\Users\\user\\.nuget\\packages\\microsoft.data.sqlite\\7.0.4\\microsoft.data.sqlite.7.0.4.nupkg.sha512",
+    "C:\\Users\\user\\.nuget\\packages\\microsoft.data.sqlite.core\\7.0.4\\microsoft.data.sqlite.core.7.0.4.nupkg.sha512",
+    "C:\\Users\\user\\.nuget\\packages\\sqlitepclraw.bundle_e_sqlite3\\2.1.4\\sqlitepclraw.bundle_e_sqlite3.2.1.4.nupkg.sha512",
+    "C:\\Users\\user\\.nuget\\packages\\sqlitepclraw.core\\2.1.4\\sqlitepclraw.core.2.1.4.nupkg.sha512",
+    "C:\\Users\\user\\.nuget\\packages\\sqlitepclraw.lib.e_sqlite3\\2.1.4\\sqlitepclraw.lib.e_sqlite3.2.1.4.nupkg.sha512",
+    "C:\\Users\\user\\.nuget\\packages\\sqlitepclraw.provider.e_sqlite3\\2.1.4\\sqlitepclraw.provider.e_sqlite3.2.1.4.nupkg.sha512",
+    "C:\\Users\\user\\.nuget\\packages\\system.memory\\4.5.3\\system.memory.4.5.3.nupkg.sha512"
   ],
   "logs": []
 }
