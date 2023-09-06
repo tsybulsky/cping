@@ -60,11 +60,11 @@ char* IpToStr(IPAddress address)
 
 bool StrToIp(char* value, IPAddress* address, int* mask)
 {
-	int len = strlen(value);
+	size_t len = strlen(value);
 	*address = 0;
 	*mask = -1;
-	int i = len;
-	*address = 0;
+	//int i = len;
+	//*address = 0;
 	int step = 0;
 	unsigned char octet = 0;
 	int maskStart = -1;
@@ -328,7 +328,7 @@ bool PingByList(IPAddress list[], int len, PingOptions options)
 					ManufacturerInfo info;
 					if (GetManufacturer(oid, &info))
 					{
-						int len = strlen(info.NameEn) + 1;
+						size_t len = strlen(info.NameEn) + 1;
 						manufacturer = new char[len];
 						strcpy_s(manufacturer, len, info.NameEn);						
 						Manufacturer_Free(&info);
@@ -368,70 +368,79 @@ bool PingByList(IPAddress list[], int len, PingOptions options)
 
 bool PingNormalMode(IPAddress address, PingOptions options, bool continuos)
 {
-	char* mac;
-	char* name;
-	int rTime, ttl;
-	int maxTime = -1, avgTime = 0, received = 0, minTime = INT_MAX;
-	char* strAddress = IpToStr(address);
-	if (options.ShowMAC || options.Resolve)
+	try
 	{
-		InternalTextWrite("Information about %s", strAddress);
-		mac = NULL;
-		if (options.ShowMAC && GetMAC(address, &mac))
-			InternalTextWrite("MAC address: %s", mac);
-		if (options.Resolve && GetHostName(address, &name))
-			InternalTextWrite("Host name: %s", name);
-	}
-	InternalTextWrite("Pinging %s with packet size %d bytes", strAddress, options.PingSize);
-	if (options.Continuos)
-		SetConsoleCtrlHandler((PHANDLER_ROUTINE)&CtrlHandler, true);
-	int i = 0;
-	while ((i++ < options.Retries) || (options.Continuos))
-	{
-		if (Ping(address, options.PingSize, options.Timeout, &rTime, &ttl))
+		char* mac;
+		char* name;
+		int rTime, ttl;
+		int maxTime = -1, avgTime = 0, received = 0, minTime = INT_MAX;
+		char* strAddress = IpToStr(address);
+		if (options.ShowMAC || options.Resolve)
 		{
-			InternalTextWrite("Response from %s: response time = %ims, size %d bytes, ttl=%d\n", strAddress, rTime, options.PingSize, ttl);
-			if ((i == 0) && (options.ShowManufacturer))
+			InternalTextWrite("Information about %s", strAddress);
+			mac = NULL;
+			if (options.ShowMAC && GetMAC(address, &mac))
+				InternalTextWrite("MAC address: %s", mac);
+			if (options.Resolve && GetHostName(address, &name))
+				InternalTextWrite("Host name: %s", name);
+		}
+		InternalTextWrite("Pinging %s with packet size %d bytes", strAddress, options.PingSize);
+		if (options.Continuos)
+		{
+			SetConsoleCtrlHandler((PHANDLER_ROUTINE)&CtrlHandler, true);
+		}
+		int i = 0;
+		while ((i++ < options.Retries) || (options.Continuos))
+		{
+			if (Ping(address, options.PingSize, options.Timeout, &rTime, &ttl))
 			{
-				ManufacturerInfo info;
-				MACAddress binmac;
-				if (!GetMAC(address, &binmac))
+				InternalTextWrite("Response from %s: response time = %ims, size %d bytes, ttl=%d", strAddress, rTime, options.PingSize, ttl);
+				if ((i == 0) && (options.ShowManufacturer))
 				{
-					int oid = (binmac[0] << 16) | (binmac[1] << 8) | binmac[0];
-					if (GetManufacturer(oid, &info))
+					ManufacturerInfo info;
+					MACAddress binmac;
+					if (!GetMAC(address, &binmac))
 					{
-						InternalTextWrite("%s, %s\n", info.NameEn, info.Country);
+						int oid = (binmac[0] << 16) | (binmac[1] << 8) | binmac[0];
+						if (GetManufacturer(oid, &info))
+						{
+							InternalTextWrite("%s, %s\n", info.NameEn, info.Country);
+						}
 					}
 				}
+				received++;
+				avgTime += rTime;
+				if (rTime < minTime)
+					minTime = rTime;
+				if (rTime > maxTime)
+					maxTime = rTime;
 			}
-			received++;
-			avgTime += rTime;
-			if (rTime < minTime)
-				minTime = rTime;
-			if (rTime > maxTime)
-				maxTime = rTime;
+			else
+				InternalTextWrite("%s\n", PingStatusToStr(status));
+			if (breakPing)
+				break;
+			Sleep(1000);
 		}
-		else
-			InternalTextWrite("%s\n", PingStatusToStr(status));
-		if (breakPing)
-			break;
-		Sleep(1000);
+		if (options.ShowStatistics)
+		{
+			InternalTextWrite("Ping statictics for %s:\n", strAddress);
+			InternalTextWrite("  Packets: sent = %d, received = %d\n", i, received, i - received);
+			if (i != 0)
+				InternalTextWrite("  Loses: %.1f%%\n", ((double)(i - received) / ((double)i) * 100.0));
+			if (received != 0)
+				InternalTextWrite("  Average round trip time: %d ms\n", avgTime / received);
+			else
+				InternalTextWrite("  Average round trip time is unavailable due unreachable host\n");
+			InternalTextWrite("  Minimum time: %d ms, Maximum: %d ms\n", minTime, maxTime);
+		}
+		if (options.Continuos)
+			SetConsoleCtrlHandler((PHANDLER_ROUTINE)&CtrlHandler, false);
+		return true;
 	}
-	if (options.ShowStatistics)
+	catch (...)
 	{
-		InternalTextWrite("Ping statictics for %s:\n", strAddress);
-		InternalTextWrite("  Packets: sent = %d, received = %d\n", i, received, i - received);
-		if (i != 0)
-			InternalTextWrite("  Loses: %.1f%%\n", ((double)(i - received) / ((double)i) * 100.0));
-		if (received != 0)
-			InternalTextWrite("  Average round trip time: %d ms\n", avgTime / received);
-		else
-			InternalTextWrite("  Average round trip time is unavailable due unreachable host\n");
-		InternalTextWrite("  Minimum time: %d ms, Maximum: %d ms\n", minTime, maxTime);
+		return false;
 	}
-	if (options.Continuos)
-		SetConsoleCtrlHandler((PHANDLER_ROUTINE)&CtrlHandler, false);
-	return true;
 }
 
 bool SetCallback(TextWriteProc textWrite, InfoWriteProc infoWrite, TextWriteProc progress)

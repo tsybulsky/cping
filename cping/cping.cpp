@@ -6,6 +6,7 @@
 #include "ping.h"
 #include "console.h"
 #include "winsock.h"
+//#include "winsock2.h"
 #include <string.h>
 #include <varargs.h>
 
@@ -335,8 +336,9 @@ bool ParseParams(int argc, char** argv)
             }
             else
             {
-                ErrorMsg = (char*)"Specified file doesn't exist";
-                return false;
+                options.HostName = param;
+                options.Mode = Name;
+                continue;
             }
         }
         else
@@ -490,8 +492,9 @@ WSADATA wsaData;
 
 bool ReadIpListFile(char* filename, IPAddress** list, int* count)
 {
-    FILE* f;
+    FILE* f = 0;
     char* buffer = new char[256];
+    memset(buffer, 0, 256);
     try
     {        
         IPAddress address;
@@ -571,33 +574,57 @@ int main(int argc, char** argv)
             fopen_s(&fout,options.OutputFilename, "wt+");
         }
         catch (...)
-        {
+        {            
             return -2;
         }
     }
     SetCallback(&_textOut, &_infoOut, &_progress);
+    WSAStartup(0x0202, &wsaData);
     if (options.Mode == File)
     {
         if (options.Continuos)
         {
             std::cout << "Specifing file address list not allowed this --endless (-t) option\n";
+            WSACleanup();
             return -3;
         }
         else
             if (!ReadIpListFile(options.AddressFilename, &list, &count))
+            {
+                WSACleanup();
                 return -4;
+            }
     }
     else
     {
+        if (options.Mode == Name)
+        {
+            hostent* host = gethostbyname((const char*)options.HostName);
+            if (host == NULL)
+            {
+                int code = GetLastError();
+                char error[10];
+                _itoa_s(code, error, 10,10);
+                std::cout << "Cannot resolve host name " << options.HostName << "\n";
+                std::cout << "Error " << error << endl;                
+                WSACleanup();
+                return -5;
+            }            
+            std::cout << "Name resolved to " << IpToStr((IPAddress)htonl(*(u_long*)host->h_addr_list[0])) << endl;
+            options.CIDR = 32;
+            options.Mask = 32;
+            options.Address = htonl(*(uint32_t*)host->h_addr_list[0]);
+        }
         if ((options.Mask < 32) && (options.Continuos))
         {
             std::cout << "Options --endless (-t) allowed only for value of the mask parameter is 32\n";
+            WSACleanup();
             return -4;
         }
         else
             FillIpList(options.Address, options.CIDR, &list, &count);
     }
-    WSAStartup(0x0202, &wsaData);
+    
     if (options.ShowManufacturer)
         if (!OpenDb())
             options.ShowManufacturer = false;

@@ -12,7 +12,8 @@ typedef uint32_t IPAddress;
 typedef enum tagPingMode {
     None,
     Address,
-    File
+    File,
+    Name
 } PingMode;
 
 typedef struct _tagPingOptions
@@ -20,22 +21,23 @@ typedef struct _tagPingOptions
     PingMode Mode;
     IPAddress Address;
     uint32_t Mask;
-    int      CIDR;
+    int CIDR;
     char* AddressFilename;
-    int     PingSize;
-    int     Timeout;
-    int     Retries;
-    bool    ShowAvg;
-    bool    ShowMin;
-    bool    ShowMAC;  
-    bool    ShowTime;
-    bool    HideUnavailable;    
-    bool    Resolve;    
-    bool    ShowTTL;
-    bool    Continuos;        
-    bool    ShowHelp;    
-    bool    ShowStatistics;
-    bool    ShowManufacturer;
+    char* HostName;
+    int PingSize;
+    int Timeout;
+    int Retries;
+    bool ShowAvg;
+    bool ShowMin;
+    bool ShowMAC;  
+    bool ShowTime;
+    bool HideUnavailable;    
+    bool Resolve;    
+    bool ShowTTL;
+    bool Continuos;        
+    bool ShowHelp;    
+    bool ShowStatistics;
+    bool ShowManufacturer;
     char* Filter;
     char* OutputFilename;
 } PingOptions, *PPingOptions; 
@@ -68,5 +70,6 @@ bool OpenDb();
 bool GetManufacturer(int oid, ManufacturerInfo* pInfo);
 bool CloseDb();
 void Manufacturer_Free(ManufacturerInfo*);
+
 
 #endif
