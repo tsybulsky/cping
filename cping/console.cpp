@@ -90,7 +90,7 @@ void Window(int left, int top, int right, int bottom)
 
 void GotoXY(int x, int y)
 {
-    COORD coord;
+    COORD coord{};
     coord.X = x - 1 + ConsoleScreenRect.Left;
     coord.Y = y - 1 + ConsoleScreenRect.Top;
     if (!SetConsoleCursorPosition(hConsoleOutput, coord))

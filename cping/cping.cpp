@@ -1,6 +1,6 @@
 ﻿// cping.cpp : Этот файл содержит функцию "main". Здесь начинается и заканчивается выполнение программы.
 //
-#include <windef.h>
+#include <windows.h>
 #include <iostream>
 #include <winuser.h>
 #include "ping.h"
@@ -17,7 +17,7 @@ void ShowHelp()
     const char* usage[] = {
         "USAGE:",
         "  cping <Address[/CIDR] | address_file> [-o <output filename>] [-m] [-n <size>]",
-        "     [-t <time>] [-l] [-rm[:number>]]  [-ra[:number]] [-th] [-hide] [-c] [-r]",
+        "     [-to <time>] [-l] [-rm <number>]  [-ra <number>] [-th] [-hide] [-c] [-r]",
         "Address/CIDR",
         "    Host('s) IP address(es) in CIDR notation with network bits used. If CIDR is",
         "    ommited used value of 32  bits. CIDR  value must  be between  1 and 32. The",
@@ -306,6 +306,7 @@ bool ParseParams(int argc, char** argv)
             OptionsFlags |= PARAM_SIZE;
             continue;
         }
+        //PARAM_MANUFACTURER
         if ((strcmp(param, "-M") == 0) || (strcmp(param, "--manufacturer") == 0))
         {
             if (FLAG_IS_SET(OptionsFlags, PARAM_MANUFACTURER))
@@ -317,11 +318,17 @@ bool ParseParams(int argc, char** argv)
             OptionsFlags |= PARAM_MANUFACTURER;
             continue;
         }
+        //SHOW HELP
+        if ((strcmp(param, "-h") == 0) || (strcmp(param, "-?") == 0) || (strcmp(param, "--help") == 0))
+        {
+            options.ShowHelp = true;
+            continue;
+        }
         if (options.Mode != None)
         {
             ErrorMsg = (char*)"Pinging host already specified";
             return false;
-        }
+        }       
         if (!StrToIp(param, &(options.Address), (int*) & (options.CIDR)))
         {
             options.Address = 0;
@@ -504,8 +511,7 @@ bool ReadIpListFile(char* filename, IPAddress** list, int* count)
         if (fopen_s(&f, (const char*)filename, "rt"))
             return false;
         while (fgets(buffer, 256, f) != NULL)
-        {
-            
+        {            
             if (StrToIp(buffer, &address, &mask))
             {
                 (*count)++;
@@ -542,6 +548,7 @@ bool ReadIpListFile(char* filename, IPAddress** list, int* count)
         return false;
     }
 }
+
 int main(int argc, char** argv)
 {
     InitConsole();   
@@ -557,8 +564,7 @@ int main(int argc, char** argv)
     }
     if (options.ShowHelp)
     {
-        ShowHelp();
-        
+        ShowHelp();        
         return 0;
     }
     if (options.Mode == None)

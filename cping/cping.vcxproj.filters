@@ -32,13 +32,13 @@
     <ClInclude Include="ping.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="console.h">
-      <Filter>Исходные файлы</Filter>
-    </ClInclude>
     <ClInclude Include="cping.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="..\sqlite_test\sqlite3.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="console.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>
