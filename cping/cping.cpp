@@ -67,7 +67,7 @@ void ShowHelp()
         "-f, --filter",
         "   Experimental options for output filtration",
         "NOTICE: if -th -rm and -ra options ommited -rm used  is set as default  option.",
-        "  If specified only -th option host will be pinged one time for access cheking",
+        "  If specified only -th option host will be pinged one time for access checking",
         NULL };
     int index = 0;
     while (usage[index] != NULL)
@@ -99,7 +99,8 @@ char* ErrorMsg;
 #define PARAM_RESOLVE       0x0400
 #define PARAM_MANUFACTURER  0x0800
 #define PARAM_FILTER        0x1000
-#define PARAM_MASK          0x1FFF
+#define PARAM_MAX_TTL       0x2000
+#define PARAM_MASK          0x3FFF
 
 #define FLAG_IS_SET(Flags, Flag) ((Flags & Flag) != 0)
 
@@ -130,6 +131,7 @@ bool ParseParams(int argc, char** argv)
     options.Timeout = 500;
     options.ShowStatistics = false;
     options.ShowManufacturer = false;
+    options.MaxTTL = 128;
     int OptionsFlags = 0;
     int index = 1;
     while (index < argc)
@@ -194,6 +196,33 @@ bool ParseParams(int argc, char** argv)
             }
             OptionsFlags |= PARAM_TTL;
             options.ShowTTL = true;
+            continue;
+        }
+        //PARAM_MAX_TTL
+        if ((strcmp(param, "-ml") == 0) || (strcmp(param, "--maxttl") == 0))
+        {
+            if (FLAG_IS_SET(OptionsFlags, PARAM_MAX_TTL))
+            {
+                ErrorMsg = (char*)"Option -ml is already specified";
+                return false;
+            }
+            if (index >= argc)
+            {
+                ErrorMsg = (char*)"Too few parameters specified";
+                return false;
+            }
+            char* value = argv[index];
+            if (IsValidInt(value))
+            {
+                options.MaxTTL = atoi(value);
+                OptionsFlags |= PARAM_MAX_TTL;
+                index++;
+            }
+            else
+            {
+                ErrorMsg = (char*)"Invalid number of max TTL value";
+                return false;
+            }
             continue;
         }
         //PARAM_TIMEHIDE - -th, --notime
@@ -297,7 +326,7 @@ bool ParseParams(int argc, char** argv)
                 ErrorMsg = (char*)"Too few parameters specified";
                 return false;
             }
-            if (!IsValidInt(argv[index + 1]))
+            if (!IsValidInt(argv[index]))
             {
                 ErrorMsg = (char*)"Invalid number for option -n";
                 return false;

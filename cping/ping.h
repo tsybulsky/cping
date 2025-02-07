@@ -34,6 +34,7 @@ typedef struct _tagPingOptions
     bool HideUnavailable;    
     bool Resolve;    
     bool ShowTTL;
+    unsigned char MaxTTL;
     bool Continuos;        
     bool ShowHelp;    
     bool ShowStatistics;

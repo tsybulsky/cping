@@ -198,7 +198,12 @@ bool Ping(IPAddress address, int pingSize, int timeout, int* time, int* ttl)
 	{
 		HANDLE port = IcmpCreateFile();
 		memset(&reply, 0, sizeof(reply));
-		status = IcmpSendEcho(port, ntohl((int)address), &reply.data[0], pingSize, NULL, (void*)&reply, sizeof(reply) + pingSize, timeout);
+		IP_OPTION_INFORMATION info;
+		memset(&info, 0, sizeof(info));
+		info.Ttl = *ttl;
+		info.Flags = IP_FLAG_DF;
+		info.OptionsSize = 0;
+		status = IcmpSendEcho(port, ntohl((int)address), &reply.data[0], pingSize, &info, (void*)&reply, sizeof(reply) + pingSize, timeout);
 		if (status > 0)
 		{
 			status = reply.status;			
@@ -287,7 +292,7 @@ bool PingByList(IPAddress list[], int len, PingOptions options)
 		total = 0;
 		for (int j = 0; j < options.Retries; j++)
 		{
-			
+			ttl = options.MaxTTL;
 			if (Ping(list[i], options.PingSize, options.Timeout, &rTime, &ttl))
 			{
 				available = true;
@@ -392,6 +397,7 @@ bool PingNormalMode(IPAddress address, PingOptions options, bool continuos)
 		int i = 0;
 		while ((i++ < options.Retries) || (options.Continuos))
 		{
+			ttl = options.MaxTTL;
 			if (Ping(address, options.PingSize, options.Timeout, &rTime, &ttl))
 			{
 				InternalTextWrite("Response from %s: response time = %ims, size %d bytes, ttl=%d", strAddress, rTime, options.PingSize, ttl);

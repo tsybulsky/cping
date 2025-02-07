@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("oui_importer")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+09d61db7648cdbc9980ed174623738c522946318")]
 [assembly: System.Reflection.AssemblyProductAttribute("oui_importer")]
 [assembly: System.Reflection.AssemblyTitleAttribute("oui_importer")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
